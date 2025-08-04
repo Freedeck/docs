@@ -39,7 +39,11 @@
         ]
       },
       {
-        "tab": "API Reference",
+        "tab": "Server API",
+        "openapi": "server-openapi.yaml"
+      },
+      {
+        "tab": "Release Index API",
         "openapi": "server-openapi.yaml"
       }
     ],

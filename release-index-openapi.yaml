@@ -1,0 +1,104 @@
+openapi: 3.0.4
+info:
+  title: Freedeck Marketplace Index API
+  version: "1.0.0"
+  description: >
+    Returns metadata about available Freedeck release channels and their catalogs.
+
+servers:
+  - url: https://releases.freedeck.app
+
+paths:
+  /index.json:
+    get:
+      summary: Get Freedeck release index
+      operationId: getIndex
+      responses:
+        '200':
+          description: Successfully returns index of available release channels.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message_to_humans:
+                    type: string
+                  channels:
+                    type: object
+                    additionalProperties:
+                      oneOf:
+                        - $ref: '#/components/schemas/RepositoryExternalChannel'
+                        - $ref: '#/components/schemas/AppReleaseChannel'
+                        - $ref: '#/components/schemas/ReleaseChannel'
+
+components:
+  schemas:
+    RepositoryExternalChannel:
+      type: object
+      required: [type, title, catalog]
+      properties:
+        type:
+          type: string
+          enum: [repository_external]
+        title:
+          type: string
+        message:
+          type: string
+          nullable: true
+        catalog:
+          type: string
+          format: uri
+
+    AppReleaseChannel:
+      type: object
+      required: [type, source, catalog]
+      properties:
+        type:
+          type: string
+          enum: [app_release]
+        description:
+          type: string
+        source:
+          type: string
+          format: uri
+        catalog:
+          type: array
+          items:
+            type: object
+            required: [version, path]
+            properties:
+              version:
+                type: string
+              path:
+                type: string
+              desc:
+                type: string
+                nullable: true
+
+    ReleaseChannel:
+      type: object
+      required: [type, source, branch, catalog]
+      properties:
+        type:
+          type: string
+          enum: [release]
+        source:
+          type: string
+          format: uri
+        branch:
+          type: string
+        description:
+          type: string
+        catalog:
+          type: array
+          items:
+            type: object
+            required: [version]
+            properties:
+              version:
+                type: string
+              desc:
+                type: string
+                nullable: true
+              current:
+                type: boolean
