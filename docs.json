@@ -28,6 +28,13 @@
               "essentials/plugins",
               "essentials/themes"
             ]
+          },
+          {
+            "group": "Developing",
+            "pages": [
+              "dev-tutorials/packages",
+              "dev-tutorials/plugin"
+            ]
           }
         ]
       },
