@@ -48,7 +48,7 @@
       },
       {
         "tab": "Socket.io RPC API",
-        "pages": ["websocket-rpc.mdx"]
+        "pages": ["dev-tutorials/websocket-rpc.mdx"]
       }
     ],
     "global": {
