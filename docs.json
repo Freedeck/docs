@@ -24,6 +24,7 @@
           {
             "group": "Customization",
             "pages": [
+              "essentials/marketplace",
               "essentials/plugins",
               "essentials/themes"
             ]
