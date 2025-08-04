@@ -45,6 +45,10 @@
       {
         "tab": "Release Index API",
         "openapi": "release-index-openapi.yaml"
+      },
+      {
+        "tab": "Socket.io RPC API",
+        "pages": ["websocket-rpc.mdx"]
       }
     ],
     "global": {
