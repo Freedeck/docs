@@ -1,0 +1,610 @@
+---
+title: "Socket.IO Server API"
+description: "Complete reference for Freedeck's Socket.IO WebSocket API"
+---
+
+Freedeck uses Socket.IO for real-time communication between the desktop companion app and mobile clients. The API supports authentication, tile management, plugin control, and RPC operations.
+
+## Connection & Authentication
+
+### Initial Connection
+
+When connecting to Freedeck, clients must follow this handshake process:
+
+<CodeGroup>
+
+```javascript Client Connection
+const socket = io('http://localhost:5754');
+
+// 1. Identify client type
+socket.emit('0x00', 'Companion'); // or 'Main' for mobile
+
+// 2. Listen for server information
+socket.on('I', (compressedData) => {
+  // Data is gzip compressed
+  const serverInfo = JSON.parse(zlib.gunzipSync(compressedData));
+  console.log('Server info:', serverInfo);
+});
+```
+
+
+```javascript Server Response
+{
+  "id": "socket-id",
+  "tempLoginID": "random.tlid.fd",
+  "needToAuthenticate": true, // if auth is enabled
+  "version": {
+    "raw": "6.0.0d-rc4",
+    "human": "Freedeck v6.0.0d-rc4"
+  },
+  "events": { /* event name mappings */ },
+  "mobileConnected": false,
+  "launcherOpen": false,
+  "connectedToFDWS": false
+}
+```
+
+</CodeGroup>
+
+### Authentication Flow
+
+If authentication is enabled, you must authenticate before accessing protected features:
+
+<CodeGroup>
+
+```javascript Authentication
+// 1. Send temp login ID validation
+socket.emit('lD', serverInfo.tempLoginID);
+
+// 2. Wait for acknowledgment
+socket.on('lDA', (valid) => {
+  if (valid) {
+    // 3. Send login credentials
+    socket.emit('lL', { passwd: 'your-password' });
+  }
+});
+
+// 4. Handle login response
+socket.on('lL', (success) => {
+  if (success) {
+    console.log('Authenticated successfully');
+  } else {
+    console.log('Authentication failed');
+  }
+});
+```
+
+
+```javascript Error Handling
+// Session validation failure
+socket.on('daMF', () => {
+  console.error('Session validation failed');
+});
+
+// Unauthorized access
+socket.on('daCF', () => {
+  console.error('Unauthorized access attempt');
+});
+```
+
+</CodeGroup>
+
+## Event Reference
+
+### Core Events
+
+| Event Code | Event Name         | Description                 |
+| ---------- | ------------------ | --------------------------- |
+| `0x00`     | `client_greet`     | Client identification       |
+| `I`        | `information`      | Server information exchange |
+| `k`        | `keypress`         | Physical key press events   |
+| `U`        | `user_mobile_conn` | Mobile connection status    |
+
+### Default Events
+
+These events control core Freedeck functionality:
+
+<Accordion title="Reload & Recompile Events">
+  <CodeGroup>
+
+  ```javascript Reload Events
+  // Reload entire Freedeck
+  socket.emit('dR');
+  
+  // Reload sounds only
+  socket.emit('dRS');
+  
+  // Recompile webpack assets
+  socket.emit('dC');
+  ```
+
+  
+  ```javascript Server Response
+  // Server will emit reload signal to all clients
+  socket.on('dR', () => {
+    // Reload your client state
+  });
+  ```
+
+  </CodeGroup>
+</Accordion>
+
+<Accordion title="Plugin Management Events">
+  <CodeGroup>
+
+  ```javascript Plugin Control
+  // Disable a plugin
+  socket.emit('dBP', { pluginId: 'plugin-name' });
+  
+  // Enable a plugin  
+  socket.emit('dEP', { pluginId: 'plugin-name' });
+  
+  // Reload single plugin
+  socket.emit('dRSP', 'plugin-id');
+  
+  // Update all plugins
+  socket.emit('dUP');
+  ```
+
+  
+  ```javascript Plugin Events
+  // Plugin state changes
+  socket.on('dBP', (pluginData) => {
+    // Plugin disabled
+  });
+  
+  socket.on('dEP', (pluginData) => {
+    // Plugin enabled
+  });
+  ```
+
+  </CodeGroup>
+</Accordion>
+
+<Accordion title="Notification Events">
+  <CodeGroup>
+
+  ```javascript Send Notification
+  socket.emit('dN', {
+    sender: 'Your App',
+    data: {
+      title: 'Notification Title',
+      message: 'Notification message',
+      type: 'info' // 'info', 'warning', 'error', 'success'
+    }
+  });
+  ```
+
+  
+  ```javascript Receive Notifications
+  socket.on('dN', (notification) => {
+    console.log(`${notification.sender}: ${notification.data.message}`);
+  });
+  ```
+
+  </CodeGroup>
+</Accordion>
+
+### Companion Events
+
+These events are used by the desktop companion app for tile and profile management:
+
+<Accordion title="Tile Management">
+  <CodeGroup>
+
+  ```javascript Tile Operations
+  // Update tile data
+  socket.emit('cTu', {
+    tileId: 'tile-1',
+    data: { /* tile configuration */ }
+  });
+  
+  // Create new tile
+  socket.emit('ckN', {
+    position: [0, 0],
+    data: { /* tile data */ }
+  });
+  
+  // Delete tile
+  socket.emit('ckD', 'tile-id');
+  
+  // Edit tile
+  socket.emit('ckE', {
+    tileId: 'tile-1',
+    changes: { /* updated fields */ }
+  });
+  
+  // Set tile icon
+  socket.emit('ckI', {
+    tileId: 'tile-1',
+    icon: 'base64-image-data'
+  });
+  
+  // Move tile
+  socket.emit('ckM', {
+    tileId: 'tile-1',
+    newPosition: [1, 2]
+  });
+  ```
+
+  
+  ```javascript Tile Event Responses
+  socket.on('cTu', (tileData) => {
+    // Tile updated
+  });
+  
+  socket.on('ckN', (newTile) => {
+    // New tile created
+  });
+  
+  socket.on('ckD', (tileId) => {
+    // Tile deleted
+  });
+  ```
+
+  </CodeGroup>
+</Accordion>
+
+<Accordion title="Profile Management">
+  <CodeGroup>
+
+  ```javascript Profile Operations
+  // Set active profile
+  socket.emit('cpS', 'profile-name');
+  
+  // Add new profile
+  socket.emit('cpA', {
+    name: 'New Profile',
+    data: { /* profile configuration */ }
+  });
+  
+  // Duplicate profile
+  socket.emit('cpD', {
+    source: 'existing-profile',
+    name: 'Copied Profile'
+  });
+  
+  // Import profile
+  socket.emit('cpI', {
+    profileData: { /* imported profile data */ }
+  });
+  ```
+
+  
+  ```javascript Theme Management
+  // Set theme
+  socket.emit('ctS', 'theme-name.css');
+  ```
+
+  </CodeGroup>
+</Accordion>
+
+<Accordion title="Plugin Settings">
+  <CodeGroup>
+
+  ```javascript Plugin Configuration
+  // Set plugin setting
+  socket.emit('dPS', {
+    pluginId: 'plugin-name',
+    setting: 'setting-key',
+    value: 'setting-value'
+  });
+  
+  // Set all plugin settings
+  socket.emit('dPSA', {
+    pluginId: 'plugin-name',
+    settings: {
+      key1: 'value1',
+      key2: 'value2'
+    }
+  });
+  ```
+
+  </CodeGroup>
+</Accordion>
+
+### RPC Events
+
+Remote Procedure Call events for advanced integrations:
+
+<CodeGroup>
+
+```javascript RPC Authorization
+socket.emit('RPC.Authorize', {
+  token: 'your-rpc-token',
+  permissions: ['read', 'write']
+});
+```
+
+
+```javascript RPC Operations
+// Set RPC data
+socket.emit('RPC.Set', {
+  key: 'data-key',
+  value: { /* any data */ }
+});
+
+// RPC reply
+socket.emit('RPC.Reply', {
+  requestId: 'req-123',
+  data: { /* response data */ }
+});
+```
+
+
+```javascript RPC Responses
+socket.on('RPC.Reply', (response) => {
+  console.log('RPC Response:', response);
+});
+```
+
+</CodeGroup>
+
+### FDWS Events
+
+Freedeck WebSocket events for launcher integration:
+
+<CodeGroup>
+
+```javascript FDWS Communication
+// Send request to FDWS
+socket.emit('n-r', [
+  'method-name',
+  ['arg1', 'arg2']
+]);
+
+// Receive FDWS reply
+socket.on('n-R', (response) => {
+  console.log('FDWS Response:', response);
+});
+```
+
+</CodeGroup>
+
+### Relay Events
+
+Events for relay server functionality:
+
+<CodeGroup>
+
+```javascript Relay Operations
+// Identify to relay
+socket.emit('RelayIdentify', {
+  type: 'client',
+  id: 'unique-client-id'
+});
+
+// Relay request
+socket.emit('RelayRequest', {
+  target: 'target-client-id',
+  data: { /* request data */ }
+});
+
+// Relay file transfer
+socket.emit('RelayFile', {
+  target: 'target-client-id',
+  file: 'base64-file-data',
+  filename: 'file.txt'
+});
+```
+
+
+```javascript Relay Event Handling
+socket.on('RelayOpened', () => {
+  console.log('Relay connection opened');
+});
+
+socket.on('Error', (error) => {
+  console.error('Relay error:', error);
+});
+```
+
+</CodeGroup>
+
+## Data Structures
+
+### Server Information
+
+<CodeGroup>
+
+```typescript TypeScript Types
+interface ServerInfo {
+  id: string;
+  tempLoginID: string;
+  hostname: string;
+  soundpacks: string[];
+  themes: string[];
+  mobileConnected: boolean;
+  style: StyleConfig;
+  iconRegistry: Record<string, string>;
+  disabled: string[];
+  events: EventNames;
+  launcherOpen: boolean;
+  connectedToFDWS: boolean;
+  version: {
+    raw: string;
+    human: string;
+  };
+  needToAuthenticate?: boolean;
+  config?: Config;
+  plugins?: PluginInfo[];
+}
+```
+
+
+```javascript Example Response
+{
+  "id": "abc123",
+  "tempLoginID": "456.tlid.fd", 
+  "hostname": "Freedeck-pc",
+  "soundpacks": ["default.soundpack", "custom.soundpack#"],
+  "themes": ["dark.css", "light.css", "custom.css#"],
+  "mobileConnected": false,
+  "style": { /* style configuration */ },
+  "iconRegistry": { /* icon mappings */ },
+  "disabled": ["disabled-plugin-id"],
+  "events": { /* event name mappings */ },
+  "launcherOpen": true,
+  "connectedToFDWS": true,
+  "version": {
+    "raw": "6.0.0d-rc4", 
+    "human": "Freedeck v6.0.0d-rc4"
+  }
+}
+```
+
+</CodeGroup>
+
+### Plugin Information
+
+<CodeGroup>
+
+```typescript Plugin Types
+interface PluginInfo {
+  name: string;
+  id: string;
+  author: string;
+  version: string;
+  intents: string[];
+  Settings: Record<string, any>;
+  popout: boolean;
+  dashModules: any[];
+  types: any[];
+  imports: any[];
+  hooks: any[];
+  views: any[];
+  disabled: boolean;
+  stopped: boolean;
+}
+```
+
+</CodeGroup>
+
+## Error Handling
+
+<CodeGroup>
+
+```javascript Common Errors
+// Authentication errors
+socket.on('daMF', () => {
+  console.error('Session validation failed');
+});
+
+socket.on('daCF', () => {
+  console.error('Unauthorized access');
+});
+
+// General error handling
+socket.on('Error', (error) => {
+  console.error('Socket error:', error);
+});
+
+// Disconnection handling
+socket.on('disconnect', (reason) => {
+  console.log('Disconnected:', reason);
+  // Implement reconnection logic
+});
+```
+
+</CodeGroup>
+
+## Best Practices
+
+<Tip>
+  **Authentication**: Always validate your temp login ID before sending credentials. It's required by the server.
+</Tip>
+
+<Tip>
+  **Rate Limiting**: Be mindful of rapid tile operations - the server has abuse protection.
+</Tip>
+
+<Tip>
+  **Compression**: Server responses are gzip compressed for efficiency.
+</Tip>
+
+<Warning>
+  **Security**: Never hardcode passwords in client applications. Use secure credential storage.
+</Warning>
+
+## Examples
+
+### Basic Mobile Client
+
+<CodeGroup>
+
+```javascript Mobile Client
+const io = require('socket.io-client');
+const zlib = require('zlib');
+
+const socket = io('http://localhost:5754');
+
+socket.on('connect', () => {
+  // Identify as mobile client
+  socket.emit('0x00', 'Main');
+});
+
+socket.on('I', (compressed) => {
+  const serverInfo = JSON.parse(zlib.gunzipSync(compressed));
+  
+  if (serverInfo.needToAuthenticate) {
+    // Handle authentication
+    authenticate(serverInfo.tempLoginID);
+  } else {
+    // Ready to use
+    console.log('Connected to Freedeck:', serverInfo.version.human);
+  }
+});
+
+function authenticate(tempLoginID) {
+  socket.emit('lD', tempLoginID);
+  
+  socket.on('lDA', (valid) => {
+    if (valid) {
+      const password = prompt('Enter Freedeck password:');
+      socket.emit('lL', { passwd: password });
+    }
+  });
+}
+
+// Handle keypress events
+socket.on('k', (keyData) => {
+  console.log('Key pressed:', keyData);
+});
+```
+
+</CodeGroup>
+
+### Companion App Integration
+
+<CodeGroup>
+
+```javascript Companion Integration
+const socket = io('http://localhost:5754');
+
+socket.on('connect', () => {
+  socket.emit('0x00', 'Companion');
+});
+
+// Create a new tile
+function createTile(position, config) {
+  socket.emit('ckN', {
+    position: position,
+    data: config
+  });
+}
+
+// Update tile icon
+function updateTileIcon(tileId, iconData) {
+  socket.emit('ckI', {
+    tileId: tileId,
+    icon: iconData
+  });
+}
+
+// Listen for tile updates
+socket.on('cTu', (tileData) => {
+  console.log('Tile updated:', tileData);
+});
+```
+
+</CodeGroup>
