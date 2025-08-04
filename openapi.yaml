@@ -1,0 +1,369 @@
+openapi: 3.0.4
+info:
+  title: Freedeck Connect API
+  description: Remember, this API can change at any time! Remember to check the docs every once in a while if something stops working. **NOTE THAT ALL METHODS WITH AUTHORIZATION ARE ONLY IF THE SERVER HAS THE AUTHORIZATION/PASSWORD FEATURE ENABLED. IF NOT, YOU MAY IGNORE IT.** These docs will assume you have the authorization/password feature enabled.
+  version: 6.0.0
+
+servers:
+  - url: http://localhost:5754/
+
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      description: Your Freedeck API token beginning with "fd."
+      type: apiKey
+      in: header 
+      name: Authorization
+
+  schemas:
+    handoffState:
+      type: object
+      required:
+        - status
+        - message
+      properties:
+        message:
+          type: string
+          example: Successfully completed action.
+        status:
+          type: string
+          example: success
+
+paths:
+  /api/auth:
+    post:
+      tags:
+        - Authentication
+      summary: Create a AuthenticatedAPIToken to re-use and identify the client as authenticated.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token:
+                    type: string
+                    example: 'fd.a3dafc9d044e40fae380f9789567b'
+                  given:
+                    description: When the API token was issued (created hash) on the server.
+                    type: number
+                    example: 1754299957498
+                  expiresAt:
+                    description: When the API token will expire. Upon expiry, the token is granted 1 final use.
+                    type: number
+                    example: 1754299987502
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                id:
+                  type: string
+                  description: A simple way for Freedeck to identify who you are through token.
+                  example: myApp
+                password:
+                  type: string
+                  description: The Freedeck server's password
+                  example: fd.093153af95a8ea96bd0526030a782691d3f001d2eb6996af86852bd202b73275654761ae8aac1c32d2e675c75088da8425f4bf4ac7061561af64e38314ff1f2e
+                preHashed:
+                  description: State if your token is already hashed (with the prefix "fd.")
+                  type: boolean
+                  example: true
+  /api/native/*:
+    get:
+      summary: Forward every request for a native operation to the local Freedeck App handler
+      responses:
+        "200":
+          description: OK - Documentation for Freedeck App's native/websocket methods coming soon.
+      tags:
+        - FreedeckNativeWS
+  /api/discover:
+    get:
+      summary: Returns a simple identification of the Freedeck Server.
+      tags:
+        - Discovery API
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  title:
+                    type: string
+                    example: Freedeck
+                  version:
+                    type: string
+                    example: 6.0.0-rc4
+                  plugins:
+                    type: array
+                    description: A list of currently installed plugins.
+                    items:
+                      type: string
+                      example:
+                        - obscontrol
+                        - v2.0.0
+                  webpackStatus:
+                    type: string
+                    description: Can be any of 'uninitialized', 'compiling', or 'ready'. Used to halt immediate Companion connection to await bundles being fresh and ready.
+                    example: compiling
+                  deviceStatus:
+                    description: Whether or not the user's external Freedeck Client is connected
+                    type: boolean
+                  ip:
+                    description: The local IPs discovered on the machine.
+                    type: string
+                  myApp:
+                    description: MyFreedeck properties
+                    type: object
+                    properties:
+                      code:
+                        type: string
+                        description: The generated code to connect locally
+                        example: ABCDEF
+                      host:
+                        type: string
+                        description: The MyFreedeck server host.
+                        example: https://my.freedeck.app/
+  /api/discover/code-request:
+    get:
+      tags:
+        - Discovery API
+      summary: Request a MyFreedeck code forcefully. Not recommended, as it will send the IP and hostname without consent if not done by Companion. Will be removed in the full stable release of Freedeck v6.0.0.
+      deprecated: true
+      responses: 
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: ABCDEF
+  /api/upload/report:
+    get:
+      tags:
+        - Uploads
+      summary: Give you a list of every uploaded sound, then file *to the Freedeck Library.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: array
+                  items:
+                    type: string
+                example: [["sound.mp3"],["icon.png"]]
+  /api/upload/sound:
+    post:
+      tags:
+        - Uploads
+      summary: "Upload a sound to the Freedeck Library. NOTE: All upload routes will eventually be covered in auth with a token."
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - oldName
+                  - newName
+                properties:
+                  oldName:
+                    type: string
+                    description: Your uploaded filename
+                    example: templateStatic.png
+                  newName:
+                    type: string
+                    description: What Freedeck MAY have renamed it to, so the Client can keep track.
+                    example: templateStatic.png
+
+  /api/upload/icon:
+    post:
+      tags:
+        - Uploads
+      summary: "Upload an icon to the Freedeck Library. NOTE: All upload routes will eventually be covered in auth with a token."
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: object
+                required:
+                  - oldName
+                  - newName
+                properties:
+                  oldName:
+                    type: string
+                    description: Your uploaded filename
+                    example: sound.mp3
+                  newName:
+                    type: string
+                    description: What Freedeck MAY have renamed it to, so the Client can keep track.
+                    example: sound.mp3
+              
+  /api/plugin/{pluginId}:
+    get:
+      tags:
+        - Discovery API
+      parameters:
+        - in: path
+          name: pluginId
+          schema:
+            type: string
+            example: obscontrol
+          required: true
+          description: ID of the plugin to get.
+
+      summary: Get information on a specific plugin.
+      responses: 
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                type: string
+                example: gui
+              examples:
+                auth:
+                  summary: Authorized
+                  value: {"instance":{"v2":true,"name":"OBS Control","author":"Freedeck","imports":[],"Settings":{"password":"-REDACTED-"},"hooks":[{"type":4,"name":"editor.view"},{"type":1,"name":"oc/server.js"},{"type":0,"name":"oc/server.js"}],"views":{"OBS Control":"editor.view"},"dashModules":{},"id":"obscontrol","stopped":false,"hasInit":true,"popout":"","_hookLocation":"user-data/hooks/","_usesAsar":false,"_id":"opi9xi","_callbacks":{"0":[null]},"_intent":[0,1],"io":{"active":false},"types":[{"type":"obs.cf","renderType":"button","templateData":{"password":"change-me"},"name":"Reconnect to OBS","pluginId":"obscontrol","hidden":true,"display":"OBS Control"}],"currentDataPacket":{},"version":"2.0.0","file":{"filePath":"obscontrol.fdpackage"}}}
+                err_login:
+                  summary: "Error: Invalid Token"
+                  value: {"error":true,"message":"Invalid token"}
+                err_no_token:
+                  summary: "Error: No Token"
+                  value: {"error":true,"message":"No token provided"}
+      security:
+        - ApiKeyAuth: []
+  /handoff/get-token:
+    get:
+      tags:
+        - Legacy Handoff V1 API
+      summary: Request a HandoffAPI Token. THIS IS DIFFERENT FROM THE AuthenticatedAPITokens AND WILL EVENTUALLY BE REPLACED, THIS IS KEPT AROUND FOR LEGACY SUPPORT
+      responses: 
+        "200":
+          description: OK
+          content:
+            text/plain:
+              schema:
+                type: string
+                example: 3YJQ0BF65H3HAFJPT7GMPD
+  /handoff/{token}/play-ui-sound/{sound}:
+    get:
+      tags:
+        - Legacy Handoff V1 API
+      summary: Play a UI Sound through every client. Only maps to the current soundpack and it's available sounds.
+      parameters:
+        - in: path
+          name: token
+          schema:
+            type: string
+            example: 3YJQ0BF65H3HAFJPT7GMPD
+          required: true
+          description: The HandoffAPI Token.
+        - in: path
+          name: sound
+          schema:
+            type: string
+            example: mobile_connect
+          required: true
+          description: The key of the sound that maps to the sound file.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/handoffState"
+  /handoff/{token}/reload-plugins:
+    get:
+      tags:
+        - Legacy Handoff V1 API
+      summary: Tells the server to internally reload the plugin cache, then reload the clients to get the updates.
+      parameters:
+        - in: path
+          name: token
+          schema:
+            type: string
+            example: 3YJQ0BF65H3HAFJPT7GMPD
+          required: true
+          description: The HandoffAPI Token.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/handoffState"
+  /handoff/{token}/notify/{data}:
+    get:
+      tags:
+        - Legacy Handoff V1 API
+      summary: Send a server-wide broadcasted notification to all connected clients.
+      parameters:
+        - in: path
+          name: token
+          schema:
+            type: string
+            example: 3YJQ0BF65H3HAFJPT7GMPD
+          required: true
+          description: The HandoffAPI Token.
+        - in: path
+          name: data
+          schema:
+            type: string
+            example: I'm a notification!
+          required: true
+          description: The actual data to be shown to all clients.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/handoffState"
+  /handoff/{token}/notify/{data}/{sender}:
+    get:
+      tags:
+        - Legacy Handoff V1 API
+      summary: Send a server-wide broadcasted notification to all connected clients, but replace the sender with your name instead of just Handoff.
+      parameters:
+        - in: path
+          name: token
+          schema:
+            type: string
+            example: 3YJQ0BF65H3HAFJPT7GMPD
+          required: true
+          description: The HandoffAPI Token.
+        - in: path
+          name: data
+          schema:
+            type: string
+            example: I'm a notification!
+          required: true
+          description: The actual data to be shown to all clients.
+        - in: path
+          name: sender
+          schema:
+            type: string
+            example: My App
+          required: true
+          description: The notification sender's name.
+      responses:
+        "200":
+          description: OK
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/handoffState"
+                
