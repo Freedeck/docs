@@ -44,7 +44,7 @@
       },
       {
         "tab": "Release Index API",
-        "openapi": "server-openapi.yaml"
+        "openapi": "release-index-openapi.yaml"
       }
     ],
     "global": {
