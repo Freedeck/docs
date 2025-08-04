@@ -180,11 +180,11 @@ paths:
                   oldName:
                     type: string
                     description: Your uploaded filename
-                    example: templateStatic.png
+                    example: sound.mp3
                   newName:
                     type: string
                     description: What Freedeck MAY have renamed it to, so the Client can keep track.
-                    example: templateStatic.png
+                    example: sound.mp3
 
   /api/upload/icon:
     post:
@@ -205,11 +205,12 @@ paths:
                   oldName:
                     type: string
                     description: Your uploaded filename
-                    example: sound.mp3
+                    example: templateStatic.png
                   newName:
                     type: string
                     description: What Freedeck MAY have renamed it to, so the Client can keep track.
-                    example: sound.mp3
+                    example: templateStatic.png
+
               
   /api/plugin/{pluginId}:
     get:
