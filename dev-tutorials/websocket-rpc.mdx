@@ -1,5 +1,452 @@
 ---
-title: 'New file'
-description: 'Description of your new file.'
+title: "Socket.io RPC"
+description: "A Node.js client library for connecting to Freedeck applications via RPC using Socket.IO"
+icon: "plug"
 ---
 
+<Info>
+  FreedeckRPC provides a simple interface to connect external applications to Freedeck, allowing you to send notifications, edit tiles in real-time, manage plugins, configure settings, and authenticate with the Freedeck server.
+</Info>
+
+<Warning>
+  This documentation is for usage of the freedeck/rpc module, it's not available as a npm module, but you can clone the repo to get it.
+</Warning>
+
+## Features
+
+- 🔔 Send notifications to Freedeck
+- 🎛️ Edit tiles in real-time
+- 🔌 Manage plugins
+- ⚙️ Configure settings
+- 🔐 Secure authentication with Freedeck server
+
+## Installation
+
+```bash
+git clone https://github.com/Freedeck/rpc
+```
+
+<CodeGroup>
+
+```bash npm
+npm install socket.io-client
+```
+
+
+```bash yarn
+yarn add socket.io-client
+```
+
+
+```bash pnpm
+pnpm add socket.io-client
+```
+
+</CodeGroup>
+
+## Quick Start
+
+<Steps>
+  <Step title="Import the module">
+    ```javascript
+    const { RPCClient, RPCScopes } = require('./FreedeckRPC');
+    ```
+  </Step>
+  <Step title="Identify your application">
+    ```javascript
+    RPCClient.identify({
+      id: RPCClient.generateID('MyApp', 'YourName'),
+      title: 'My Freedeck App',
+      author: 'Your Name',
+      version: '1.0.0',
+      authorizationMessage: 'Allow MyApp to connect to Freedeck?'
+    });
+    ```
+  </Step>
+  <Step title="Connect to Freedeck">
+    ```javascript
+    RPCClient.connect('freedeck://localhost', [RPCScopes.sendNotifications]);
+    ```
+  </Step>
+  <Step title="Listen for events and send notifications">
+    ```javascript
+    RPCClient.on('status-update', (data) => {
+      console.log('Status:', data.stage);
+    });
+    
+    RPCClient.on('authorization', () => {
+      RPCClient.notify('Hello from my app!');
+    });
+    ```
+  </Step>
+</Steps>
+
+## API Reference
+
+### RPCClient
+
+<Note>
+  The main client object for interacting with Freedeck. All methods and properties are accessed through this object.
+</Note>
+
+#### Methods
+
+<AccordionGroup>
+  <Accordion title="identify(appInfo)" icon="id-card">
+    Identifies your application to the Freedeck server.
+
+    **Parameters:**
+
+    - `appInfo` (Object):
+      - `id` (string): Unique application ID (use `generateID()`)
+      - `title` (string): Display name of your application
+      - `author` (string): Your name or organization
+      - `version` (string): Application version
+      - `authorizationMessage` (string): Message shown to user during authorization
+
+    ```javascript
+    RPCClient.identify({
+      id: RPCClient.generateID('WeatherApp', 'JohnDoe'),
+      title: 'Weather Dashboard',
+      author: 'John Doe',
+      version: '2.1.0',
+      authorizationMessage: 'Allow Weather Dashboard to send weather updates?'
+    });
+    ```
+  </Accordion>
+  <Accordion title="connect(url, scopes)" icon="link">
+    Connects to a Freedeck server.
+
+    **Parameters:**
+
+    - `url` (string): Server URL (supports `freedeck://` protocol or standard HTTP)
+    - `scopes` (Array): Array of permission scopes (default: `[RPCScopes.sendNotifications]`)
+
+    <CodeGroup>
+
+    ```javascript Local Connection
+    // Connect to local Freedeck
+    RPCClient.connect('freedeck://localhost');
+    ```
+
+    
+    ```javascript Remote Connection
+    // Connect with multiple scopes
+    RPCClient.connect('freedeck://192.168.1.100', [
+      RPCScopes.sendNotifications,
+      RPCScopes.editTilesLive
+    ]);
+    ```
+
+    </CodeGroup>
+  </Accordion>
+  <Accordion title="notify(...messages)" icon="bell">
+    Sends a notification to Freedeck.
+
+    **Parameters:**
+
+    - `...messages`: Messages to send (will be joined with spaces)
+
+    ```javascript
+    RPCClient.notify('Battery low:', '15%');
+    RPCClient.notify('Download complete!');
+    ```
+  </Accordion>
+  <Accordion title="on(event, callback)" icon="ear-listen">
+    Listens for events from the RPC client.
+
+    **Parameters:**
+
+    - `event` (string): Event name
+    - `callback` (function): Event handler
+
+    **Available Events:**
+
+    <CardGroup cols={2}>
+      <Card title="status-update" icon="chart-line">
+        Connection status changes
+      </Card>
+      <Card title="connection" icon="wifi">
+        Connection state updates
+      </Card>
+      <Card title="authorization" icon="shield-check">
+        User authorization granted
+      </Card>
+      <Card title="reply" icon="message">
+        Server responses
+      </Card>
+    </CardGroup>
+    ```javascript
+    RPCClient.on('status-update', (data) => {
+      console.log('Status changed to:', data.stage);
+    });
+    
+    RPCClient.on('authorization', () => {
+      console.log('User authorized the app!');
+      // Now you can send notifications
+    });
+    ```
+  </Accordion>
+  <Accordion title="generateID(appName, author)" icon="key">
+    Generates a unique application ID.
+
+    **Parameters:**
+
+    - `appName` (string): Name of your application
+    - `author` (string): Author name
+
+    **Returns:** Base64-encoded unique ID
+
+    ```javascript
+    const appId = RPCClient.generateID('MusicPlayer', 'DevStudio');
+    ```
+  </Accordion>
+  <Accordion title="generateAuthToken(appID)" icon="ticket">
+    Generates an authentication token for an application.
+
+    **Parameters:**
+
+    - `appID` (string): Application ID
+
+    **Returns:** Base64-encoded authentication token
+  </Accordion>
+  <Accordion title="validateAuthToken(token)" icon="shield-check">
+    Validates an authentication token format.
+
+    **Parameters:**
+
+    - `token` (string): Token to validate
+
+    **Returns:** Boolean indicating if token is valid
+  </Accordion>
+</AccordionGroup>
+
+#### Properties
+
+<PropertyGroup>
+  <Property name="stage" type="string">
+    Current connection stage:
+
+    * `'disconnected'`: Not connected
+    * `'preflight'`: Preparing to connect
+    * `'initializing'`: Setting up connection
+    * `'requesting-auth'`: Requesting authorization
+    * `'prompting-user'`: Waiting for user approval
+    * `'connected@{url}'`: Successfully connected
+    * `'denied'`: User denied authorization
+  </Property>
+
+  <Property name="appInfo" type="object">
+    Current application information object containing id, title, author, version, and authorizationMessage.
+  </Property>
+</PropertyGroup>
+
+### RPCScopes
+
+<Info>
+  Permission scopes that define what your application can do with Freedeck.
+</Info>
+
+<ParamField path="sendNotifications" default={1} type="number">
+  Send notifications to Freedeck
+</ParamField>
+
+<ParamField path="editTilesLive" default={10} type="number">
+  Edit tiles without reloading
+</ParamField>
+
+<ParamField path="editTilesReload" default={11} type="number">
+  Edit tiles with reload
+</ParamField>
+
+<ParamField path="configEdit" default={400} type="number">
+  Edit Freedeck configuration
+</ParamField>
+
+<ParamField path="pluginsAdd" default={200} type="number">
+  Add new plugins
+</ParamField>
+
+<ParamField path="pluginsReload" default={201} type="number">
+  Reload existing plugins
+</ParamField>
+
+<ParamField path="pluginsDisable" default={202} type="number">
+  Disable plugins
+</ParamField>
+
+<ParamField path="pluginsEnable" default={203} type="number">
+  Enable plugins
+</ParamField>
+
+```javascript
+const RPCScopes = {
+  sendNotifications: 1,      // Send notifications to Freedeck
+  
+  editTilesLive: 10,         // Edit tiles without reloading
+  editTilesReload: 11,       // Edit tiles with reload
+  
+  configEdit: 400,           // Edit Freedeck configuration
+  
+  pluginsAdd: 200,           // Add new plugins
+  pluginsReload: 201,        // Reload existing plugins
+  pluginsDisable: 202,       // Disable plugins
+  pluginsEnable: 203         // Enable plugins
+};
+```
+
+## Connection States
+
+<Warning>
+  The client goes through several states during connection. Monitor these states to handle the connection lifecycle properly.
+</Warning>
+
+<Steps>
+  <Step title="disconnected">
+    Initial state - not connected to any server
+  </Step>
+  <Step title="preflight">
+    Preparing connection parameters and validation
+  </Step>
+  <Step title="initializing">
+    Setting up Socket.IO connection to server
+  </Step>
+  <Step title="requesting-auth">
+    Sending authorization request to server
+  </Step>
+  <Step title="prompting-user">
+    User sees authorization dialog in Freedeck
+  </Step>
+  <Step title="connected@{url}">
+    Successfully connected and authorized
+  </Step>
+  <Step title="denied">
+    User rejected authorization (app exits automatically)
+  </Step>
+</Steps>
+
+## Error Handling
+
+```javascript
+RPCClient.on('status-update', (data) => {
+  if (data.stage === 'denied') {
+    console.log('User denied authorization');
+    // Handle rejection gracefully
+  }
+});
+
+// The client automatically exits on denial
+// Override this behavior by handling the event before it reaches the default handler
+```
+
+## Advanced Usage
+
+### Custom Logging
+
+```javascript
+// Set log level (0 = errors only, 1 = normal, 2+ = verbose)
+RPCClient.logLevel = 2;
+```
+
+### Handoff API
+
+For alternative communication when direct RPC isn't available:
+
+```javascript
+// Get handoff token
+RPCClient.handoffAPI.getToken().then(token => {
+  console.log('Handoff token:', token);
+});
+
+// Send notification via handoff
+RPCClient.handoffAPI.notify('MyApp', 'Hello via handoff!');
+```
+
+## Examples
+
+### Simple Notification App
+
+```javascript
+const { RPCClient, RPCScopes } = require('./FreedeckRPC');
+
+// Setup app
+RPCClient.identify({
+  id: RPCClient.generateID('NotifyApp', 'Me'),
+  title: 'Simple Notifier',
+  author: 'Me',
+  version: '1.0.0',
+  authorizationMessage: 'Send notifications to Freedeck?'
+});
+
+// Connect and send notifications
+RPCClient.connect('freedeck://localhost');
+
+RPCClient.on('authorization', () => {
+  setInterval(() => {
+    const time = new Date().toLocaleTimeString();
+    RPCClient.notify('Current time:', time);
+  }, 60000); // Every minute
+});
+```
+
+### Status Monitor
+
+```javascript
+const { RPCClient, RPCScopes } = require('./FreedeckRPC');
+
+RPCClient.identify({
+  id: RPCClient.generateID('StatusMonitor', 'Admin'),
+  title: 'System Status Monitor',
+  author: 'Admin',
+  version: '1.0.0',
+  authorizationMessage: 'Monitor system status?'
+});
+
+RPCClient.on('status-update', (data) => {
+  console.log(`Connection status: ${data.stage}`);
+});
+
+RPCClient.on('authorization', () => {
+  console.log('✅ Connected and authorized!');
+  
+  // Monitor system and send alerts
+  checkSystemStatus();
+});
+
+function checkSystemStatus() {
+  // Your monitoring logic here
+  const cpuUsage = Math.random() * 100;
+  
+  if (cpuUsage > 80) {
+    RPCClient.notify('⚠️ High CPU usage:', `${cpuUsage.toFixed(1)}%`);
+  }
+}
+
+RPCClient.connect('freedeck://localhost');
+```
+
+## Troubleshooting
+
+### Common Issues
+
+1. **Connection fails**: Ensure Freedeck is running on the specified URL
+2. **Authorization denied**: User must click "Allow" in the Freedeck authorization dialog
+3. **Notifications not appearing**: Make sure you have `sendNotifications` scope and are authorized
+
+### Debug Mode
+
+```javascript
+// Enable verbose logging
+RPCClient.logLevel = 2;
+
+// Listen to all events for debugging
+RPCClient.on('connection', (data) => console.log('Connection:', data));
+RPCClient.on('reply', (data) => console.log('Reply:', data));
+```
+
+## Requirements
+
+- Node.js
+- socket.io-client package
+- Running Freedeck application
+- Network access to Freedeck server
