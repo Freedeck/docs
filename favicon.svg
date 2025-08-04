@@ -12,9 +12,4 @@
             <path d="M653,287.78C653,239.333 613.667,200 565.22,200L341.78,200C293.333,200 254,239.333 254,287.78L254,511.22C254,559.667 293.333,599 341.78,599L565.22,599C613.667,599 653,559.667 653,511.22L653,287.78Z" style="fill:rgb(13,139,194);stroke:black;stroke-width:9.12px;"/>
         </g>
     </g>
-    <g transform="matrix(25.7525,0,0,25.7525,-50236.6,-42212.5)">
-        <g transform="matrix(12,0,0,12,1989.14,1657.07)">
-        </g>
-        <text x="1953.14px" y="1657.08px" style="font-family:'JetBrainsMonoNF-Regular', 'JetBrainsMono Nerd Font', monospace;font-size:12px;fill:white;">&lt;fd/&gt;</text>
-    </g>
 </svg>
