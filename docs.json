@@ -9,10 +9,7 @@
   },
   "favicon": "/favicon.svg",
   "navigation": {
-    "tabs": [
-      {
-        "tab": "Guides",
-        "groups": [
+    "groups": [
           {
             "icon": "handshake",
             "group": "Getting Started",
@@ -62,9 +59,7 @@
               "apis/socketio-server"
             ]
           }
-        ]
-      }
-    ],
+        ],
     "global": {
       "anchors": [
         {
