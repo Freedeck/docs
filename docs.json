@@ -4,7 +4,7 @@
   "name": "Freedeck",
   "colors": {
     "primary": "#0D8BC2",
-    "light": "#07C983",
+    "light": "#0D8BC2",
     "dark": "#2D2D32"
   },
   "favicon": "/favicon.svg",
@@ -14,7 +14,8 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "icon": "handshake",
+            "group": "Getting Started",
             "pages": [
               "index",
               "quickstart",
@@ -22,37 +23,46 @@
             ]
           },
           {
+            "icon": "brush",
             "group": "Customization",
             "pages": [
-              "essentials/marketplace",
-              "essentials/plugins",
-              "essentials/themes"
+              "customization/marketplace",
+              "customization/plugins",
+              "customization/themes"
             ]
           },
           {
-            "group": "Developing",
+            "icon": "wrench",
+            "group": "Development Resources",
             "pages": [
-              "dev-tutorials/packages",
-              "dev-tutorials/plugin"
+              {
+                "group": "Packages",
+                "icon": "box",
+                "pages": ["dev-tutorials/packages", "dev-tutorials/packages_json"]
+              },
+              "dev-tutorials/plugin",
+              "dev-tutorials/theme"
+            ]
+          },
+          {
+            "group": "API References",
+            "pages": [
+              "apis/introduction",
+              {
+                "icon": "magnifying-glass",
+                "group": "HTTP Local Connect",
+                "openapi": "server-openapi.yaml"
+              },
+              {
+                "icon": "database",
+                "group": "Marketplace Release",
+                "openapi": "release-index-openapi.yaml"
+              },
+              "apis/socketio-rpc",
+              "apis/socketio-server"
             ]
           }
         ]
-      },
-      {
-        "tab": "Server API",
-        "openapi": "server-openapi.yaml"
-      },
-      {
-        "tab": "Release Index API",
-        "openapi": "release-index-openapi.yaml"
-      },
-      {
-        "tab": "Socket.io RPC API",
-        "pages": ["dev-tutorials/websocket-rpc"]
-      },
-      {
-        "tab": "Socket.io Server API",
-        "pages": ["dev-tutorials/socketio-server"]
       }
     ],
     "global": {
@@ -95,9 +105,8 @@
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "github": "https://github.com/freedeck",
+      "discord": "https://discord.gg/7gWrgyt7Aa"
     }
   }
 }

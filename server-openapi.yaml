@@ -34,7 +34,7 @@ paths:
     post:
       tags:
         - Authentication
-      summary: Create a AuthenticatedAPIToken to re-use and identify the client as authenticated.
+      summary: Obtain an API token.
       responses:
         "200":
           description: OK
@@ -63,27 +63,27 @@ paths:
               properties:
                 id:
                   type: string
-                  description: A simple way for Freedeck to identify who you are through token.
+                  description: Identify the application through token.
                   example: myApp
                 password:
                   type: string
                   description: The Freedeck server's password
                   example: fd.093153af95a8ea96bd0526030a782691d3f001d2eb6996af86852bd202b73275654761ae8aac1c32d2e675c75088da8425f4bf4ac7061561af64e38314ff1f2e
                 preHashed:
-                  description: State if your token is already hashed (with the prefix "fd.")
+                  description: State if your given password is already hashed (with the prefix "fd.")
                   type: boolean
                   example: true
   /api/native/*:
     get:
-      summary: Forward every request for a native operation to the local Freedeck App handler
+      summary: Forward to Native App Handler
       responses:
         "200":
           description: OK - Documentation for Freedeck App's native/websocket methods coming soon.
       tags:
-        - FreedeckNativeWS
+        - FreedeckWS
   /api/discover:
     get:
-      summary: Returns a simple identification of the Freedeck Server.
+      summary: Identifies a running Freedeck Server.
       tags:
         - Discovery API
       responses:
@@ -134,7 +134,8 @@ paths:
     get:
       tags:
         - Discovery API
-      summary: Request a MyFreedeck code forcefully. Not recommended, as it will send the IP and hostname without consent if not done by Companion. Will be removed in the full stable release of Freedeck v6.0.0.
+      summary: Request a MyFreedeck code forcefully.
+      description: Not recommended, as it will send the IP and hostname without consent if not done by Companion. Will be removed in the full stable release of Freedeck v6.0.0.
       deprecated: true
       responses: 
         "200":
@@ -148,7 +149,7 @@ paths:
     get:
       tags:
         - Uploads
-      summary: Give you a list of every uploaded sound, then file *to the Freedeck Library.
+      summary: Give you a list of every uploaded sound, then file to the Freedeck Library.
       responses:
         "200":
           description: OK

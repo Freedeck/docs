@@ -1,49 +1,66 @@
 ---
 title: "Quickstart"
 description: "Start using Freedeck in minutes."
+icon: rocket
 ---
 
-## Get started in three steps
+## Getting the App
 
-Get your Freedeck ready to use.
-
-### Step 1: Getting the App
-
-<AccordionGroup>
-  <Accordion title="Get Node and Git" icon="folders">
-    Freedeck runs on [Node.js](https://nodejs.org/en) and [Git](https://git-scm.com/downloads). You need to download them before using Freedeck.
-  </Accordion>
-  <Accordion title="Download the App" icon="copy">
+<Steps>
+  <Step title="Step 1: Install Node.js and Git" icon="folders">
+    Freedeck is built on [Node.js](https://nodejs.org/en) and [Git](https://git-scm.com/downloads). You need to download and install them to your computer before using Freedeck.
+  </Step>
+  <Step title="Step 2: Download the App" icon="copy">
     To actually use Freedeck, you need the App. [You can download the latest version by clicking here.](https://github.com/Freedeck/app/releases/latest/download/Freedeck.exe)
-
-    To clarify, the "App" is the native Windows app that allows for system control and auto updates. The "Server" is the underlying data processor that handles the tile database. The "Client" is your phone, just a viewer of the tiles. The "Companion" is the desktop application that opens on your computer that lets you edit the configuration.
-  </Accordion>
-  <Accordion title="Run the App" icon="rectangle-terminal">
+  </Step>
+  <Step title="Step 3: Run the App" icon="rectangle-terminal">
     Run the app\! Double click it from your downloads folder or wherever it is.
 
     <Warning>
       Windows may give you a SmartScreen popup. _This is because Freedeck is not signed, as that costs money._
     </Warning>
-  </Accordion>
-</AccordionGroup>
+  </Step>
+</Steps>
 
-![image.png](/images/installer.png)
+Here's full clarification on what certain terms mean.
 
-From here, you can press Install.
+<CodeGroup>
+```text App
+The "App" is the native Windows app that allows for system control and auto updates.
+```
 
-### Step 2: Running Freedeck\!
+```text Companion
+The "Companion" is the desktop application that opens on your computer that lets you edit the configuration.
+```
 
-Now that you have Freedeck installed, press Launch Freedeck\!
+```text Server
+The "Server" is the underlying data processor that handles the tile database
+```
 
-![image.png](/images/installed.png)
+```text Client
+The "Client" is your phone, or any other connected device that is just a viewer/interactor of the tiles.
+```
 
-### Step 3: Use Freedeck
+</CodeGroup>
 
-You're now ready to use Freedeck and explore the interface to discover what it has to offer\!
+## Installing Freedeck
+Now we'll finally install the Freedeck application in its entirety. From here, names become less ambiguous.
+
+<Steps>
+  <Step title="Step 3: Install Freedeck">
+    ![installer.png](/images/installer.png)
+    From here, you can press Install. 
+  </Step>
+
+  <Step title="Step 4: Launch Freedeck">
+    Now that you have Freedeck installed, press Launch Freedeck\!
+    ![installed.png](/images/installed.png)
+  </Step>
+</Steps>
 
 ## Next steps
 
-Now that you have Freedeck, explore these key features:
+You're now ready to use Freedeck and explore the interface to discover what it has to offer\!
 
 <CardGroup cols={2}>
   <Card title="Plugins" icon="plug" href="/essentials/plugins">
@@ -55,7 +72,7 @@ Now that you have Freedeck, explore these key features:
   <Card title="Marketplace" icon="store" href="/essentials/marketplace">
     Download community-created plugins and themes\!
   </Card>
-  <Card title="API documentation" icon="code" href="/api-reference/introduction">
+  <Card title="API documentation" icon="code" href="/apis/introduction">
     Check out the Freedeck HTTP API\!
   </Card>
 </CardGroup>

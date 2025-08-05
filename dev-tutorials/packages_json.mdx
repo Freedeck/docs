@@ -1,0 +1,28 @@
+---
+title: 'Package JSON Structure'
+description: 'The "freedeck" property.'
+icon: 'landmark-flag'
+---
+
+Inside of your Package's `package.json`, you must have a parseable name, author, version, alongside a `freedeck` property.
+
+<ResponseField name="freedeck" type="Package Information">
+  <Expandable title="properties">
+    <ResponseField name="title" type="string">
+      The title of the package to be shown.
+    </ResponseField>
+
+    <ResponseField name="type" type="string">
+      The type of package it is. This can only be "plugin" or "theme".
+    </ResponseField>
+
+    <ResponseField name="icons" type="string">
+      The relative path to the icon registrar file for the package, if you have one.
+    </ResponseField>
+
+
+    <ResponseField name="is_over_21" type="boolean">
+      Whether the user is over 21 years old
+    </ResponseField>
+  </Expandable>
+</ResponseField>

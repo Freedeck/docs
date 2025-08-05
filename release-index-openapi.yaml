@@ -11,7 +11,7 @@ servers:
 paths:
   /index.json:
     get:
-      summary: Get Freedeck release index
+      summary: GET Marketplace Release Index
       operationId: getIndex
       responses:
         '200':

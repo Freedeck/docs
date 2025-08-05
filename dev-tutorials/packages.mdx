@@ -1,6 +1,13 @@
 ---
 title: 'Defining a Package'
-description: 'This is what makes a .fdpackage that file.'
-icon: 'box'
+description: 'How do packages even work???'
+icon: 'envelope-open-text'
 ---
 
+Simply put, a `.fdpackage` file is really just a gzipped archive with this file structure:
+
+```js example.fdpackage
+package.json
+main.js
+node_modules/
+```
